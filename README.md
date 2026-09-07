@@ -216,34 +216,36 @@ with open(f"results/{date}_travel_pla.md", "w", encoding="utf-8") as f:
 ---
 
 ## 🎯 (보너스) 도전 과제
--복수 지역 추천 (recommended_cities: 2~3개)
-for 구문이 없으면 
-search_restaurants("부산")
-search_restaurants("경주")
-search_restaurants("전주") 각각 이렇게 작성해야하지만
+-복수 지역 추천 (recommended_cities: 2~3개)  
+for 구문이 없으면  
+search_restaurants("부산")  
+search_restaurants("경주")  
+search_restaurants("전주") 각각 이렇게 작성해야하지만  
 
-for 루프를 쓰면:
-for city in ["부산", "경주", "전주"]:
-    search_restaurants(city)
-city 자리에 "부산" → "경주" → "전주" 순서로 자동으로 바뀌면서 3번 실행됨
+for 루프를 쓰면:  
+for city in ["부산", "경주", "전주"]:  
+    search_restaurants(city)  
+city 자리에 "부산" → "경주" → "전주" 순서로 자동으로 바뀌면서 3번 실행됨  
 
--캐싱: 같은 날짜 재실행 시 API 호출 건너뛰기
+  
+-캐싱: 같은 날짜 재실행 시 API 호출 건너뛰기  
 
 ---
 
 ## 📝 학습 정리 (과제 목표 자가 점검)
 
 1. REST API의 GET/POST 차이는?
-GET — 데이터를 가져올 때. URL에 정보를 담아서 요청
-    res = requests.get(url, headers=headers) #url : 주소, headers : 보내는 사람, 우편 종류, body : 편지 내용
-                                                        #base url("https://dapi.kakao.com/v2/local/search/keyword.json")뒤에
-                                                         ?로 파라미터를 붙임
+GET — 데이터를 가져올 때. URL에 정보를 담아서 요청  
+    res = requests.get(url, headers=headers) #url : 주소, headers : 보내는 사람, 우편 종류, body : 편지 내용  
+                                                        #base url("https://dapi.kakao.com/v2/local/search/keyword.json")뒤에  
+                                                         ?로 파라미터를 붙임  
 
-POST — 데이터를 보낼 때. 본문(body)에 정보를 담아서 요청
-    response = client.chat.completions.create(
-        model="gpt-5-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
+POST — 데이터를 보낼 때. 본문(body)에 정보를 담아서 요청  
+    response = client.chat.completions.create(  
+        model="gpt-5-mini",  
+        messages=[{"role": "user", "content": prompt}]  
+    )  
+    
 | 항목 | GET | POST |
 |------|-----|------|
 | 목적 | 조회 | 전송 |
@@ -251,36 +253,37 @@ POST — 데이터를 보낼 때. 본문(body)에 정보를 담아서 요청
 | 예시 | 검색, 조회 | 로그인, AI 프롬프트 |
 
 2. LLM 출력을 JSON으로 구조화하는 이유는?
-   → 원하는 값만 꺼낼 수 있음(도시, 날씨...)
-다음 단계로 넘기기 쉬움(도시이름을 바로 꺼내서 맛집 검색에 사용)
-형식이 일정
-즉, AI답변을 코드가 쓸 수 있는 데이터로 만들기 위해
+   → 원하는 값만 꺼낼 수 있음(도시, 날씨...)  
+다음 단계로 넘기기 쉬움(도시이름을 바로 꺼내서 맛집 검색에 사용)  
+형식이 일정  
+즉, AI답변을 코드가 쓸 수 있는 데이터로 만들기 위해  
 
 3. 외부 API 호출 시 대표 오류(인증/쿼터/네트워크/파싱)와 대응은?
+   
 -인증 오류 (Authentication)
-API 키가 없거나 틀렸을 때
-401 Unauthorized  → 키 자체가 잘못됨
-403 Forbidden     → 키는 맞는데 권한 없음 (서비스 미활성화 등)
-대응: sys.exit(1) 또는 안내 메시지 출력 후 종료
+API 키가 없거나 틀렸을 때  
+401 Unauthorized  → 키 자체가 잘못됨  
+403 Forbidden     → 키는 맞는데 권한 없음 (서비스 미활성화 등)  
+대응: sys.exit(1) 또는 안내 메시지 출력 후 종료  
 
 -쿼터 오류 (Quota)
-사용량 한도 초과
-429 Too Many Requests → 단시간 요청 너무 많음
-                      → 월 사용량 초과
-대응: 잠시 기다렸다가 재시도, 유료 플랜 업그레이드
+사용량 한도 초과  
+429 Too Many Requests → 단시간 요청 너무 많음  
+                      → 월 사용량 초과  
+대응: 잠시 기다렸다가 재시도, 유료 플랜 업그레이드  
 
--네트워크 오류 (Network)
-서버에 연결 자체가 안 될 때
-ConnectionError   → 인터넷 끊김
-Timeout           → 응답이 너무 느림
-500 Server Error  → 외부 서버 문제
-대응: 재시도, 빈 리스트로 계속 진행
+-네트워크 오류 (Network)  
+서버에 연결 자체가 안 될 때  
+ConnectionError   → 인터넷 끊김  
+Timeout           → 응답이 너무 느림  
+500 Server Error  → 외부 서버 문제  
+대응: 재시도, 빈 리스트로 계속 진행  
 
--파싱 오류 (Parsing)
-응답은 왔는데 형식이 틀렸을 때
-// AI가 JSON 대신 이렇게 답하면
-"부산을 추천합니다! {\"city\": ..."  ← json.loads() 실패
-대응: 이 코드에서는 1회 재시도 후 sys.exit(1)
+-파싱 오류 (Parsing)  
+응답은 왔는데 형식이 틀렸을 때  
+// AI가 JSON 대신 이렇게 답하면  
+"부산을 추천합니다! {\"city\": ..."  ← json.loads() 실패  
+대응: 이 코드에서는 1회 재시도 후 sys.exit(1)  
 
-4. API 키를 .env로 관리하는 이유는?
+4. API 키를 .env로 관리하는 이유는?  
    → api key 노출 방지, 개발/운영 환경마다 다른 키를 쓸 때 코드는 그대로 두고 .env만 바꿔서 쓸 수 있게
