@@ -235,16 +235,21 @@ city 자리에 "부산" → "경주" → "전주" 순서로 자동으로 바뀌�
 ## 📝 학습 정리 (과제 목표 자가 점검)
 
 1. REST API의 GET/POST 차이는?
-GET — 데이터를 가져올 때. URL에 정보를 담아서 요청  
-    res = requests.get(url, headers=headers) #url : 주소, headers : 보내는 사람, 우편 종류, body : 편지 내용  
-                                                        #base url("https://dapi.kakao.com/v2/local/search/keyword.json")뒤에  
-                                                         ?로 파라미터를 붙임  
+> GET — 데이터를 가져올 때. URL에 정보를 담아서 요청
+``` 
+    res = requests.get(url, headers=headers)
+```
+> #url : 주소, headers : 보내는 사람, 우편 종류
+> body : 편지 내용
+> #base url("https://dapi.kakao.com/v2/local/search/keyword.json")뒤에 ?로 파라미터를 붙임  
 
-POST — 데이터를 보낼 때. 본문(body)에 정보를 담아서 요청  
-    response = client.chat.completions.create(  
+>POST — 데이터를 보낼 때. 본문(body)에 정보를 담아서 요청  
+``` 
+   response = client.chat.completions.create(  
         model="gpt-5-mini",  
         messages=[{"role": "user", "content": prompt}]  
-    )  
+    )
+```
     
 | 항목 | GET | POST |
 |------|-----|------|
@@ -254,17 +259,17 @@ POST — 데이터를 보낼 때. 본문(body)에 정보를 담아서 요청
 
 2. LLM 출력을 JSON으로 구조화하는 이유는?
    → 원하는 값만 꺼낼 수 있음(도시, 날씨...)  
-다음 단계로 넘기기 쉬움(도시이름을 바로 꺼내서 맛집 검색에 사용)  
-형식이 일정  
-즉, AI답변을 코드가 쓸 수 있는 데이터로 만들기 위해  
+> - 다음 단계로 넘기기 쉬움(도시이름을 바로 꺼내서 맛집 검색에 사용)  
+> - 형식이 일정  
+> - 즉, AI답변을 코드가 쓸 수 있는 데이터로 만들기 위해  
 
 3. 외부 API 호출 시 대표 오류(인증/쿼터/네트워크/파싱)와 대응은?
    
--인증 오류 (Authentication)
-API 키가 없거나 틀렸을 때  
-401 Unauthorized  → 키 자체가 잘못됨  
-403 Forbidden     → 키는 맞는데 권한 없음 (서비스 미활성화 등)  
-대응: sys.exit(1) 또는 안내 메시지 출력 후 종료  
+> -인증 오류 (Authentication)
+>> API 키가 없거나 틀렸을 때  
+>> 401 Unauthorized  → 키 자체가 잘못됨  
+>> 403 Forbidden     → 키는 맞는데 권한 없음 (서비스 미활성화 등)  
+>> 대응: sys.exit(1) 또는 안내 메시지 출력 후 종료  
 
 -쿼터 오류 (Quota)
 사용량 한도 초과  
