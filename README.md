@@ -6,10 +6,10 @@
 - 사용할 지도 API : Kakao Local
 - Python 버전 확인: Python 3.14.7
 - 설치한 라이브러리 목록:
-      openai 3.7.0
-      requests 2.31.0
-      python-dotenv 1.0.0
-      urllib3 2.7.0
+      openai 3.7.0  
+      requests 2.31.0  
+      python-dotenv 1.0.0  
+      urllib3 2.7.0  
 
 ## STEP 1. 프로젝트 구조 만들기
 
