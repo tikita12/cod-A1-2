@@ -268,26 +268,26 @@ city 자리에 "부산" → "경주" → "전주" 순서로 자동으로 바뀌�
 
 3. 외부 API 호출 시 대표 오류(인증/쿼터/네트워크/파싱)와 대응은?
    
--인증 오류 (Authentication)
+- 인증 오류 (Authentication)
         API 키가 없거나 틀렸을 때  
         401 Unauthorized  → 키 자체가 잘못됨  
         403 Forbidden     → 키는 맞는데 권한 없음 (서비스 미활성화 등)  
         대응: sys.exit(1) 또는 안내 메시지 출력 후 종료  
 
--쿼터 오류 (Quota)
+- 쿼터 오류 (Quota)
         사용량 한도 초과  
         429 Too Many Requests → 단시간 요청 너무 많음  
                               → 월 사용량 초과  
         대응: 잠시 기다렸다가 재시도, 유료 플랜 업그레이드  
 
--네트워크 오류 (Network)  
+- 네트워크 오류 (Network)  
         서버에 연결 자체가 안 될 때  
         ConnectionError   → 인터넷 끊김  
         Timeout           → 응답이 너무 느림  
         500 Server Error  → 외부 서버 문제  
         대응: 재시도, 빈 리스트로 계속 진행  
 
--파싱 오류 (Parsing)  
+- 파싱 오류 (Parsing)  
         응답은 왔는데 형식이 틀렸을 때  
         // AI가 JSON 대신 이렇게 답하면  
         "부산을 추천합니다! {\"city\": ..."  ← json.loads() 실패  
