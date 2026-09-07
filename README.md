@@ -212,10 +212,14 @@ with open(f"results/{date}_travel_pla.md", "w", encoding="utf-8") as f:
 
 ## STEP 10. 최종 점검 체크리스트
 
-- `-date` 없이 실행하면 에러 안내가 나오는가?
-- API 키 없을 때 안내 후 종료되는가?
-- 맛집 0건이어도 리포트가 생성되는가?
-- `results/`에 JSON + MD 파일이 생성되는가?
+- `-date` 없이 실행하면 에러 안내가 나오는가?  
+![1](image/date_error.png)  
+- API 키 없을 때 안내 후 종료되는가?  
+![2](image/api_error.png) 
+- 맛집 0건이어도 리포트가 생성되는가?  
+- `results/`에 JSON + MD 파일이 생성되는가?  
+![3](image/inputoutput.png) 
+![4](image/results.png) 
 - 키가 제출물 어디에도 노출되지 않는가?
 
 ---
