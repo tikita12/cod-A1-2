@@ -6,10 +6,10 @@
 - 사용할 지도 API : Kakao Local
 - Python 버전 확인: Python 3.14.7
 - 설치한 라이브러리 목록:
-- openai 3.7.0
-- requests 2.31.0
-- python-dotenv 1.0.0
-- urllib3 2.7.0
+      openai 3.7.0
+      requests 2.31.0
+      python-dotenv 1.0.0
+      urllib3 2.7.0
 
 ## STEP 1. 프로젝트 구조 만들기
 
@@ -112,7 +112,7 @@ def search_restaurants(city):
 
     res = requests.get(url, headers=headers, params=params)
     items = res.json()["documents"]  #res.json() :응답을 json문자열에서 파이썬 딕셔너리로 변환
-                                             #["documents"]: 딕셔너리에서  "documents"의 키 값만 꺼냄
+                                     #["documents"]: 딕셔너리에서  "documents"의 키 값만 꺼냄
 
     
     restaurants = [] # ✍️ 필요한 필드만 추출 (name, address, category, url, x, y)
@@ -198,10 +198,15 @@ with open(f"results/{date}_travel_pla.md", "w", encoding="utf-8") as f:
 
 ## STEP 9. README.md 작성
 
-- 프로그램 개요 : 특정날짜 입력 시, llm으로 검색하고 kakao map의 맛집을 검색하여 여행 report작성
-- 실행 방법 : `python travel_planner.py --date "yyyy-mm-dd"`
-- API 키 설정 방법 : .env에 API_KEY 저장, .gittgnore에 .env 추가(API 키 유출 방지)
-- 결과물 확인 방법 : results/ 폴더 안에 자동 저장
+- 프로그램 개요
+      특정날짜 입력 시, llm으로 검색하고 kakao map의 맛집을 검색하여 여행 report작성
+- 실행 방법
+      `python travel_planner.py --date "yyyy-mm-dd"`
+- API 키 설정 방법
+      .env에 API_KEY 저장,
+      .gittgnore에 .env 추가(API 키 유출 방지)
+- 결과물 확인 방법
+       results/ 폴더 안에 자동 저장
 
 ---
 
@@ -239,9 +244,8 @@ city 자리에 "부산" → "경주" → "전주" 순서로 자동으로 바뀌�
 ``` 
     res = requests.get(url, headers=headers)
 ```
-> #url : 주소, headers : 보내는 사람, 우편 종류
-> body : 편지 내용
-> #base url("https://dapi.kakao.com/v2/local/search/keyword.json")뒤에 ?로 파라미터를 붙임  
+    #url : 주소, headers : 보내는 사람, 우편 종류, body : 편지 내용
+    #base url("https://dapi.kakao.com/v2/local/search/keyword.json")뒤에 ?로 파라미터를 붙임  
 
 >POST — 데이터를 보낼 때. 본문(body)에 정보를 담아서 요청  
 ``` 
@@ -257,38 +261,37 @@ city 자리에 "부산" → "경주" → "전주" 순서로 자동으로 바뀌�
 | 데이터 위치 | URL | 본문 |
 | 예시 | 검색, 조회 | 로그인, AI 프롬프트 |
 
-2. LLM 출력을 JSON으로 구조화하는 이유는?
-   → 원하는 값만 꺼낼 수 있음(도시, 날씨...)  
-> - 다음 단계로 넘기기 쉬움(도시이름을 바로 꺼내서 맛집 검색에 사용)  
-> - 형식이 일정  
-> - 즉, AI답변을 코드가 쓸 수 있는 데이터로 만들기 위해  
+2. LLM 출력을 JSON으로 구조화하는 이유는? → 원하는 값만 꺼낼 수 있음(도시, 날씨...)  
+    - 다음 단계로 넘기기 쉬움(도시이름을 바로 꺼내서 맛집 검색에 사용)  
+    - 형식이 일정  
+    - 즉, AI답변을 코드가 쓸 수 있는 데이터로 만들기 위해  
 
 3. 외부 API 호출 시 대표 오류(인증/쿼터/네트워크/파싱)와 대응은?
    
-> -인증 오류 (Authentication)
->> API 키가 없거나 틀렸을 때  
->> 401 Unauthorized  → 키 자체가 잘못됨  
->> 403 Forbidden     → 키는 맞는데 권한 없음 (서비스 미활성화 등)  
->> 대응: sys.exit(1) 또는 안내 메시지 출력 후 종료  
+    -인증 오류 (Authentication)
+        API 키가 없거나 틀렸을 때  
+        401 Unauthorized  → 키 자체가 잘못됨  
+        403 Forbidden     → 키는 맞는데 권한 없음 (서비스 미활성화 등)  
+        대응: sys.exit(1) 또는 안내 메시지 출력 후 종료  
 
--쿼터 오류 (Quota)
-사용량 한도 초과  
-429 Too Many Requests → 단시간 요청 너무 많음  
-                      → 월 사용량 초과  
-대응: 잠시 기다렸다가 재시도, 유료 플랜 업그레이드  
+    -쿼터 오류 (Quota)
+        사용량 한도 초과  
+        429 Too Many Requests → 단시간 요청 너무 많음  
+                              → 월 사용량 초과  
+        대응: 잠시 기다렸다가 재시도, 유료 플랜 업그레이드  
 
--네트워크 오류 (Network)  
-서버에 연결 자체가 안 될 때  
-ConnectionError   → 인터넷 끊김  
-Timeout           → 응답이 너무 느림  
-500 Server Error  → 외부 서버 문제  
-대응: 재시도, 빈 리스트로 계속 진행  
+    -네트워크 오류 (Network)  
+        서버에 연결 자체가 안 될 때  
+        ConnectionError   → 인터넷 끊김  
+        Timeout           → 응답이 너무 느림  
+        500 Server Error  → 외부 서버 문제  
+        대응: 재시도, 빈 리스트로 계속 진행  
 
--파싱 오류 (Parsing)  
-응답은 왔는데 형식이 틀렸을 때  
-// AI가 JSON 대신 이렇게 답하면  
-"부산을 추천합니다! {\"city\": ..."  ← json.loads() 실패  
-대응: 이 코드에서는 1회 재시도 후 sys.exit(1)  
+    -파싱 오류 (Parsing)  
+        응답은 왔는데 형식이 틀렸을 때  
+        // AI가 JSON 대신 이렇게 답하면  
+        "부산을 추천합니다! {\"city\": ..."  ← json.loads() 실패  
+        대응: 이 코드에서는 1회 재시도 후 sys.exit(1)  
 
 4. API 키를 .env로 관리하는 이유는?  
    → api key 노출 방지, 개발/운영 환경마다 다른 키를 쓸 때 코드는 그대로 두고 .env만 바꿔서 쓸 수 있게
