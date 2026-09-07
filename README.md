@@ -5,7 +5,7 @@
 - 사용할 LLM API : OpenAI
 - 사용할 지도 API : Kakao Local
 - Python 버전 확인: Python 3.14.7
-- 설치한 라이브러리 목록:
+- 설치한 라이브러리 목록:  
       openai 3.7.0  
       requests 2.31.0  
       python-dotenv 1.0.0  
