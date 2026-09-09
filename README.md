@@ -1,11 +1,27 @@
 # 🧳 API 활용 국내 여행지 추천 프로그램
+날짜를 입력하면 LLM(OpenAI)이 여행지를 추천하고, Kakao Local API로 맛집을 검색해  
+Markdown 형식의 여행 리포트를 자동 생성하는 CLI 프로그램입니다.
+
+```
+(.venv) PS C:\cod-A1-2> python travel_planner.py -date 2026-09-10
+  [1] 추천 도시: ['부산', '경주', '전주']
+  [2] 맛집 검색 완료
+  [3] 리포트 생성 완료
+
+✅ 완료! results/2026-09-10_travel_plan.md
+```
+
+---
 
 ## STEP 0. 사전 준비
 
 - 사용할 LLM API : OpenAI
 - 사용할 지도 API : Kakao Local
 - Python 버전 확인: Python 3.14.7
-- 설치한 라이브러리 목록:  
+- 설치한 라이브러리 목록:
+   ```
+   pip install -r requirements.txt
+   ```
       openai 3.7.0  
       requests 2.31.0  
       python-dotenv 1.0.0  
@@ -16,12 +32,14 @@
 ### 
 ```
 travel_planner/
-├── travel_planner.py   # 메인 실행 파일
-├── .env                # gpt key, base url, kakao api key
-├── .gitignore          #  .env :환경변수 파일 = 비밀 정보 보관소
-├── README.md
-├── results/            # 결과 저장 폴더
-└── requirements.txt
+├── travel_planner.py    # 메인 실행 파일
+├── .env                 # API 키 (git 제외)
+├── .gitignore           # .env 제외 설정
+├── README.md            # 프로젝트 문서
+├── requirements.txt     # 라이브러리 목록
+└── results/             # 결과 저장 폴더 (자동 생성)
+    ├── 2026-09-10_raw.json
+    └── 2026-09-10_travel_plan.md
 ```
 
 ## STEP 2. 환경변수(API 키) 관리
@@ -53,7 +71,7 @@ if not llm_key:
 
 ### 
 ```
-import argparse # 터미널에서 프로그램 실행 시 입력한 인자를 받아서 처리해주는 파이썬 내장 라이브러리
+import argparse               # 터미널에서 프로그램 실행 시 입력한 인자를 받아서 처리해주는 파이썬 내장 라이브러리
 from datetime import datetime
 
 parser = argparse.ArgumentParser()
@@ -70,7 +88,7 @@ except ValueError:
 
 ## STEP 4. LLM API 연동 ① - 여행지 추천 (1차 JSON)
 
-### ✍️ 내가 채울 부분
+###
 1. 프롬프트 설계 (반드시 JSON만 출력하도록!):
 ```
 당신은 여행 추천 전문가입니다.
@@ -105,52 +123,70 @@ def get_recommendation(date):
 
 ### 
 ```
-def search_restaurants(city):
-    url = "https://dapi.kakao.com/v2/local/search/keyword.json"
-    headers = {"Authorization": f"KakaoAK {MAP_KEY}"}  # ✍️ 키
-    params = {"query": f"{city} 맛집"}  # ✍️ 검색 키워드
-
-    res = requests.get(url, headers=headers, params=params)
-    items = res.json()["documents"]  #res.json() :응답을 json문자열에서 파이썬 딕셔너리로 변환
-                                     #["documents"]: 딕셔너리에서  "documents"의 키 값만 꺼냄
-
-    
-    restaurants = [] # ✍️ 필요한 필드만 추출 (name, address, category, url, x, y)
-    for item in items[:5]:
-        restaurants.append({
-            "name": item["place_name"],
-            "address": item["road_address_name"],
-            # ...
-        })
-    return restaurants
+        map_provider = KakaoMapProvider(MAP_KEY)
+        all_restaurants = {}
+        
+        for city in recommend_data["recommended_cities"]:
+            normalized = normalize_city(city)        # ⭐ 정규화 사용!
+            try:
+                result = map_provider.search_restaurants(normalized)
+                all_restaurants[city] = result
+                if len(result) == 0:
+                    errors.append({"step": "place_search", "type": "EMPTY_RESULT", "message": f"{city}: 0건"})
+            except requests.exceptions.HTTPError as e:
+                errors.append({"step": "place_search", "type": "AUTH_ERROR", "message": f"{city}: {e}"})
+                all_restaurants[city] = []
+            except Exception as e:
+                errors.append({"step": "place_search", "type": "NETWORK_ERROR", "message": f"{city}: {e}"})
+                all_restaurants[city] = []
+        
+        print(f"  [2] 맛집 검색 완료")
 ```
 
 ## STEP 6. LLM API 연동 ② - 최종 리포트 생성
 
 ### 
 ```
-def generate_report(recommend_data, restaurants): # ✍️ LLM 호출 후 마크다운 텍스트 반환
-    prompt = f"""
-    아래 정보로 여행 리포트를 Markdown으로 작성하세요.
-    날짜: {date}
-    추천 정보: {recommend_data}
-    맛집 목록: {restaurants}
+def generate_report(date, recommend_data, all_restaurants, errors):
+    restaurant_text = ""
+    for city, restaurants in all_restaurants.items():
+        if restaurants:
+            restaurant_text += f"\n[{city}]\n{json.dumps(restaurants, ensure_ascii=False)}\n"
+        else:
+            restaurant_text += f"\n[{city}]\n데이터 없음\n"
+    
+    prompt = f"""아래 정보로 여행 리포트를 Markdown으로 작성하세요.
+날짜: {date}
+추천 정보: {json.dumps(recommend_data, ensure_ascii=False)}
+도시별 맛집: {restaurant_text}
+발생한 오류: {errors}
 
-    다음 항목을 반드시 포함하세요:
-    # {date} 국내 여행 추천 리포트
-    ## 추천 지역
-    ## 추천 이유
-    ## 날씨 요약
-    ## 행사/축제
-    ## 맛집 추천 (0건이면 '데이터 없음'으로 표기)
-    ## 1일 일정 제안 (오전/오후/저녁)
+# {date} 국내 여행 추천 리포트
+## 추천 지역
+## 추천 이유
+## 날씨 요약
+## 행사/축제
+## 도시별 맛집 추천
+## 1일 일정 제안
+## ⚠️ 처리 중 알림사항 (errors 없으면 '정상 처리됨')
+"""
+    response = client.chat.completions.create(
+        model="gpt-5-mini",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content
+```
+
+```
+    report_text = generate_report(date, recommend_data, all_restaurants, errors)
+    print(f"  [3] 리포트 생성 완료")
     """
 ```
 ---
 
 ## STEP 7. 에러 처리
 
-### ✍️ 내가 채울 부분 (오류 목록 관리)
+### 
 ```
 errors = []  # 오류를 여기에 모음
 
@@ -201,7 +237,7 @@ with open(f"results/{date}_travel_pla.md", "w", encoding="utf-8") as f:
 - 프로그램 개요
       특정날짜 입력 시, llm으로 검색하고 kakao map의 맛집을 검색하여 여행 report작성
 - 실행 방법
-      `python travel_planner.py --date "yyyy-mm-dd"`
+      `python travel_planner.py -date "yyyy-mm-dd"`
 - API 키 설정 방법
       .env에 API_KEY 저장,
       .gittgnore에 .env 추가(API 키 유출 방지)
